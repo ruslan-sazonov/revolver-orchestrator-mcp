@@ -1,0 +1,6 @@
+.env
+!.contexts/.gitkeep
+.contexts/*
+.claude
+node_modules
+build

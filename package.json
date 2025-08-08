@@ -1,0 +1,20 @@
+{
+  "name": "ai-planning-system",
+  "version": "1.0.0",
+  "description": "AI Planning System with Gemini CLI Integration",
+  "scripts": {
+    "setup": "./scripts/setup-gemini-cli.sh",
+    "test": "./scripts/test-system.sh",
+    "install-deps": "./scripts/install-dependencies.sh",
+    "monitor": "./tools/monitor-contexts.sh"
+  },
+  "keywords": [
+    "ai",
+    "planning",
+    "gemini",
+    "claude-code",
+    "mcp",
+    "automation"
+  ],
+  "license": "MIT"
+}
