@@ -1,4 +1,4 @@
-# AI Planning System with Gemini CLI Integration
+# AI Planning System for the Claude Code
 
 A comprehensive AI planning system that integrates Google's Gemini CLI as a planning backend with Claude Code for implementation. Features automatic plan-then-execute workflows, persistent context management, and seamless MCP integration.
 
@@ -10,6 +10,7 @@ A comprehensive AI planning system that integrates Google's Gemini CLI as a plan
 - 🛠️ **Claude Code Integration**: Seamless integration via Model Context Protocol (MCP)
 - 📊 **Progress Monitoring**: Real-time monitoring of planning and execution progress
 - 🎯 **Environment-Based Configuration**: No hardcoded defaults, fully configurable via `.env`
+- 🧩 **Prompt-Based Library Auto-Resolution**: Describe your stack in natural language or pass structured library specs
 
 ## Quick Start
 
@@ -29,16 +30,8 @@ A comprehensive AI planning system that integrates Google's Gemini CLI as a plan
    ```
 
 2. **Create and configure environment file:**
-   ```bash
-   # Create .env file with your configuration
-   cat > .env << EOF
-   GEMINI_API_KEY=your-api-key-here
-   GEMINI_MODEL=gemini-2.5-pro
-   GEMINI_TEMPERATURE=0.3
-   GEMINI_MAX_TOKENS=4000
-   GEMINI_CLI_PATH=gemini
-   EOF
-   ```
+   `cp .env.example .env`
+   Add your Gemini API key - `GEMINI_API_KEY` in .env
 
 3. **Install dependencies and build:**
    ```bash
@@ -222,10 +215,56 @@ Creates a new planning context for a project.
 Generates a detailed implementation plan using Gemini CLI.
 
 **Parameters:**
-- `contextId`: Project context ID
+- `contextId` (string): Project context ID (optional)
+- `projectName` (string): Required if `contextId` is not provided
+- `requirements` (string): Required if `contextId` is not provided
+- `constraints` (string, optional)
+- `libraries` (array, optional): Structured library specs to fetch docs from Context7
+  - `name` (string): Canonical package or repo name, e.g., `react`, `next.js`, `supabase/supabase`, `tanstack/query`
+  - `topic` (string, optional): Narrow focus such as `routing`, `auth`, `storage`
+  - `tokens` (number, optional): Approximate token budget for docs
+- `librariesPrompt` (string, optional): Natural language description of the desired stack; when provided and `libraries` is omitted, the system auto-resolves libraries
+
+At least one of `libraries` or `librariesPrompt` must be provided. If both are provided, `libraries` takes precedence.
 
 #### `test_gemini_connection`
 Tests the connection to Gemini CLI.
+
+#### `test_context7_connection`
+Tests the connection to Context7 MCP and lists available tools.
+
+#### `render_plan_checklist`
+Renders a stored plan as a terminal-friendly checklist.
+
+Parameters:
+- `contextId` (required)
+- `planIndex` (optional, defaults to latest)
+
+Example output:
+
+```
+Overview: Personal site with Astro, Tailwind, MDX
+
+Dependencies:
+  - astro@^5.0.0 — Core framework
+  - tailwindcss@^4.0.0 — CSS utility framework
+
+File Structure:
+  - src
+  - src/components
+  - src/sections
+  - src/layouts
+  - src/pages
+  - src/content
+  - src/styles
+  - src/utils
+
+Implementation Steps:
+  setup:
+  - [ ] step-1 Initialize Astro project
+    - create package.json
+    - create astro.config.mjs
+```
 
 ## Examples
 
@@ -242,6 +281,32 @@ const plan = await generatePlanWithGemini(context.id);
 ```
 
 ### API Development
+### Prompt-Based Library Resolution
+
+Structured input example:
+
+```json
+{
+  "projectName": "Next.js + Supabase SaaS",
+  "requirements": "Subscription app with auth, RLS, and Stripe integration",
+  "constraints": "Server Components, App Router",
+  "libraries": [
+    { "name": "next.js", "topic": "routing" },
+    { "name": "supabase/supabase", "topic": "auth" },
+    { "name": "tanstack/query" }
+  ]
+}
+```
+
+Prompt-based example:
+
+```json
+{
+  "projectName": "Realtime notes",
+  "requirements": "Next.js app with realtime notes, auth, optimistic UI",
+  "librariesPrompt": "Use Next.js (App Router), Supabase for auth and storage, and TanStack Query for data fetching"
+}
+```
 ```javascript
 const apiContext = await createProjectContext(
   "Task Management API",

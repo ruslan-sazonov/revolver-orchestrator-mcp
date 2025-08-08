@@ -1,5 +1,6 @@
 import { GeminiCLIWrapper, GeminiConfig } from '../gemini-cli-wrapper.js';
 import { PlanningSession, DetailedPlan, PlanningContext, FeedbackItem } from '../shared-context/types.js';
+import { NpmVersionResolver } from './npm-version-resolver.js';
 
 export class GeminiPlanningService {
   private geminiCLI: GeminiCLIWrapper;
@@ -39,6 +40,10 @@ export class GeminiPlanningService {
     }
     
     const plan = this.parsePlanResponse(planData);
+    if (Array.isArray(plan.dependencies) && plan.dependencies.length > 0) {
+      const resolver = new NpmVersionResolver();
+      plan.dependencies = await resolver.resolveLatestVersions(plan.dependencies);
+    }
     
     return {
       id: `gemini-plan-${Date.now()}`,
@@ -65,7 +70,7 @@ export class GeminiPlanningService {
     constraints: string = '', 
     context?: PlanningContext
   ): string {
-    let prompt = `Create a comprehensive software implementation plan for the following project.
+    let prompt = `Create a concrete, highly technical implementation plan for the following project.
 
 PROJECT REQUIREMENTS:
 ${requirements}
@@ -87,65 +92,47 @@ Issues from feedback: ${context.feedback
 
     prompt += `
 
-Please provide a detailed implementation plan in the following JSON format:
+Respond ONLY with valid JSON. No markdown. Use this exact schema and fill all fields with concrete, implementation-ready details:
 
 {
-  "overview": "High-level project description and chosen approach",
+  "overview": "Short project description and chosen approach",
   "architecture": [
-    {
-      "component": "component name",
-      "purpose": "what this component does",
-      "technologies": ["tech1", "tech2"],
-      "interfaces": ["API endpoints", "data flows"],
-      "dependencies": ["other components this depends on"]
-    }
-  ],
-  "implementation_steps": [
-    {
-      "id": "step-1",
-      "phase": "setup|foundation|core|features|integration|testing|deployment",
-      "description": "Detailed description of what to implement",
-      "files_to_create": ["src/components/App.js", "src/api/auth.js"],
-      "files_to_modify": ["package.json", "README.md"],
-      "dependencies": ["step-0"],
-      "estimated_complexity": "low|medium|high",
-      "estimated_time": "2 hours",
-      "validation_criteria": ["tests pass", "feature works as expected"],
-      "potential_issues": ["common problems that might arise"]
-    }
+    { "component": "string", "purpose": "string", "technologies": ["string"], "interfaces": ["string"], "dependencies": ["string"] }
   ],
   "file_structure": {
-    "src/": {
-      "components/": {},
-      "services/": {},
-      "utils/": {}
+    "src": {
+      "components": {},
+      "sections": {},
+      "layouts": {},
+      "pages": {},
+      "content": {},
+      "styles": {},
+      "utils": {}
     },
-    "tests/": {},
-    "docs/": {}
+    "tests": {}
   },
-  "dependencies": [
-    {
-      "name": "react",
-      "version": "^18.2.0",
-      "purpose": "Frontend framework",
-      "type": "runtime"
-    }
+  "data_models": [
+    { "name": "string", "fields": [ { "name": "string", "type": "string", "required": true } ] }
   ],
-  "testing_strategy": "Detailed testing approach",
-  "deployment_notes": "How to deploy this application",
-  "reasoning": "Why you chose this approach",
-  "alternatives": ["Alternative approach 1", "Alternative approach 2"],
-  "risks": [
-    {
-      "risk": "description of potential risk",
-      "probability": "low|medium|high",
-      "impact": "low|medium|high",
-      "mitigation": "how to prevent or handle this risk"
-    }
-  ]
-}
-
-IMPORTANT: Respond ONLY with valid JSON. No markdown formatting.`;
+  "routes": [
+    { "path": "string", "method": "GET|POST|PUT|DELETE|PATCH|ANY", "description": "string", "params": [ { "name": "string", "type": "string", "required": true } ] }
+  ],
+  "components": [
+    { "name": "string", "category": "ui|layout|section|feature|form|nav|data", "responsibilities": ["string"] }
+  ],
+  "content_types": [
+    { "name": "string", "fields": [ { "name": "string", "type": "string", "required": true } ] }
+  ],
+  "implementation_steps": [
+    { "id": "string", "phase": "setup|foundation|core|features|integration|testing|deployment", "description": "string", "files_to_create": ["string"], "files_to_modify": ["string"], "dependencies": ["string"], "estimated_complexity": "low|medium|high", "estimated_time": "string", "validation_criteria": ["string"], "potential_issues": ["string"] }
+  ],
+  "dependencies": [ { "name": "string", "version": "string", "purpose": "string", "type": "runtime|dev|peer" } ],
+  "testing_strategy": "string",
+  "deployment_notes": "string",
+  "reasoning": "string",
+  "alternatives": ["string"],
+  "risks": [ { "risk": "string", "probability": "low|medium|high", "impact": "low|medium|high", "mitigation": "string" } ]
+}`;
 
     return prompt;
   }
@@ -158,7 +145,11 @@ IMPORTANT: Respond ONLY with valid JSON. No markdown formatting.`;
       file_structure: response.file_structure || {},
       dependencies: response.dependencies || [],
       testing_strategy: response.testing_strategy || '',
-      deployment_notes: response.deployment_notes || ''
+      deployment_notes: response.deployment_notes || '',
+      data_models: response.data_models || [],
+      routes: response.routes || [],
+      components: response.components || [],
+      content_types: response.content_types || []
     };
   }
 
