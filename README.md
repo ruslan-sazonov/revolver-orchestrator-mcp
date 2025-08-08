@@ -61,7 +61,6 @@ A comprehensive AI planning system that integrates Google's Gemini CLI as a plan
 Use this pattern for automatic planning and implementation:
 
 ```bash
-claude --message "
 Build a React todo application with these requirements:
 - Add, edit, delete todos
 - Mark todos as complete
@@ -73,37 +72,40 @@ Workflow:
 2. Generate a detailed implementation plan using Gemini
 3. Execute the plan step by step
 
-Please follow this workflow automatically."
+Please follow this workflow automatically.
 ```
 
 ### Manual Step-by-Step Process
 
 1. **Create a project context:**
    ```bash
-   claude --message "Create a project context for a real-time chat application with React frontend and Node.js backend"
+   Create a project context for a real-time chat application with React frontend and Node.js backend
    ```
 
 2. **Generate detailed plans:**
    ```bash
-   claude --message "Use the Gemini MCP to generate a comprehensive implementation plan for the chat application context"
+   Use the Gemini MCP to generate a comprehensive implementation plan for the chat application context
    ```
 
 3. **Execute the plan:**
    ```bash
-   claude --message "Now implement the plan step by step, creating all necessary files and components"
+   Now implement the plan step by step, creating all necessary files and components
    ```
+
+### Rule of Thumb
+Generally, if you want to activate the tool call just include in your prompt "Plan with Gemini".
 
 ### Quick Examples
 
 ```bash
 # Simple web app with automatic planning
-claude --message "Build a React todo app with local storage. First create a project context, generate a plan with Gemini, then implement it."
+Build a React todo app with local storage. First create a project context, generate a plan with Gemini, then implement it.
 
 # API development with planning
-claude --message "Create a REST API for task management with JWT auth. Use the Gemini MCP to plan the architecture, then implement it step by step."
+Create a REST API for task management with JWT auth. Use the Gemini MCP to plan the architecture, then implement it step by step.
 
 # Full-stack application  
-claude --message "Build a real-time chat app with React frontend and Node.js backend. Plan with Gemini first, then execute the implementation."
+Build a real-time chat app with React frontend and Node.js backend. Plan with Gemini first, then execute the implementation.
 ```
 
 ## Architecture
@@ -130,19 +132,26 @@ claude --message "Build a real-time chat app with React frontend and Node.js bac
 All configuration is done via the `.env` file (no hardcoded defaults):
 
 ```env
-GEMINI_API_KEY=your-api-key-here
+# Gemini Configuration
+GEMINI_API_KEY=you_gemini_api_key_here
 GEMINI_MODEL=gemini-2.5-pro
 GEMINI_TEMPERATURE=0.3
 GEMINI_MAX_TOKENS=4000
 GEMINI_CLI_PATH=gemini
+
+# Context7 MCP URL
+CONTEXT7_URL=https://mcp.context7.com/mcp
+
+# System Configuration
+LOG_LEVEL=info
+CONTEXT_STORAGE_PATH=./contexts
 ```
 
 ### Available Models
+**NOTE**: The Gemini models usage is free but limited for a Gemini CLI. Usually it's more than enough for a daily planning tasks.
 - `gemini-2.5-pro` - Latest and most capable model (recommended)
-- `gemini-pro` - General purpose, balanced performance
-- `gemini-pro-vision` - Includes image understanding
-- `gemini-1.5-pro` - Previous generation with enhanced capabilities
-- `gemini-1.5-flash` - Faster responses
+- `gemini-2.5-flash` - General purpose, balanced performance
+- `gemini-2.5-flash-lite` - The most ligtweight model in a 2.5 family
 
 ### Configuration Notes
 - `GEMINI_API_KEY` is required - get from [Google AI Studio](https://makersuite.google.com/app/apikey)
