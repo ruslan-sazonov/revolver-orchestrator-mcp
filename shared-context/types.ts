@@ -38,6 +38,10 @@ export interface DetailedPlan {
   dependencies: Dependency[];
   testing_strategy: string;
   deployment_notes: string;
+  data_models?: DataModel[];
+  routes?: RouteSpec[];
+  components?: ComponentSpec[];
+  content_types?: ContentTypeSpec[];
 }
 
 export interface ImplementationStep {
@@ -61,6 +65,48 @@ export interface ArchitecturalDecision {
 
 export interface FileStructure {
   [key: string]: any;
+}
+
+export interface DataModelField {
+  name: string;
+  type: string;
+  required?: boolean;
+  description?: string;
+}
+
+export interface DataModel {
+  name: string;
+  fields: DataModelField[];
+}
+
+export interface RouteSpecParam {
+  name: string;
+  type: string;
+  required?: boolean;
+}
+
+export interface RouteSpec {
+  path: string;
+  method?: string;
+  description?: string;
+  params?: RouteSpecParam[];
+}
+
+export interface ComponentSpec {
+  name: string;
+  category?: string;
+  responsibilities?: string[];
+}
+
+export interface ContentTypeSpecField {
+  name: string;
+  type: string;
+  required?: boolean;
+}
+
+export interface ContentTypeSpec {
+  name: string;
+  fields: ContentTypeSpecField[];
 }
 
 export interface Dependency {

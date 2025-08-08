@@ -238,6 +238,42 @@ At least one of `libraries` or `librariesPrompt` must be provided. If both are p
 #### `test_gemini_connection`
 Tests the connection to Gemini CLI.
 
+#### `test_context7_connection`
+Tests the connection to Context7 MCP and lists available tools.
+
+#### `render_plan_checklist`
+Renders a stored plan as a terminal-friendly checklist.
+
+Parameters:
+- `contextId` (required)
+- `planIndex` (optional, defaults to latest)
+
+Example output:
+
+```
+Overview: Personal site with Astro, Tailwind, MDX
+
+Dependencies:
+  - astro@^5.0.0 — Core framework
+  - tailwindcss@^4.0.0 — CSS utility framework
+
+File Structure:
+  - src
+  - src/components
+  - src/sections
+  - src/layouts
+  - src/pages
+  - src/content
+  - src/styles
+  - src/utils
+
+Implementation Steps:
+  setup:
+  - [ ] step-1 Initialize Astro project
+    - create package.json
+    - create astro.config.mjs
+```
+
 ## Examples
 
 ### Web Application Development

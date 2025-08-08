@@ -6,6 +6,7 @@ import { GeminiConfig } from './gemini-cli-wrapper.js';
 import { globalContextStore } from './shared-context/context-store.js';
 import { Context7Client, LibrarySpec } from './services/context7.js';
 import { LibraryResolver } from './services/library-resolver.js';
+import { renderPlanChecklist } from './services/plan-checklist.js';
 
 const config: GeminiConfig = {
   model: process.env.GEMINI_MODEL!,
@@ -48,6 +49,27 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'test_gemini_connection',
         description: 'Test connection to Gemini CLI',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+          required: []
+        }
+      },
+      {
+        name: 'render_plan_checklist',
+        description: 'Render the latest or specified plan from a context as a terminal-friendly checklist',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            contextId: { type: 'string', description: 'Project context ID' },
+            planIndex: { type: 'number', description: 'Optional index of the plan in planning history; defaults to latest' }
+          },
+          required: ['contextId']
+        }
+      },
+      {
+        name: 'test_context7_connection',
+        description: 'Test connection to Context7 MCP and list available tools',
         inputSchema: {
           type: 'object',
           properties: {},
@@ -121,6 +143,39 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             }, null, 2)
           }]
         };
+      }
+
+      case 'test_context7_connection': {
+        const ctx7 = new Context7Client(process.env.CONTEXT7_URL);
+        try {
+          const tools = await ctx7.listTools();
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({ success: true, url: process.env.CONTEXT7_URL || undefined, tools }, null, 2)
+            }]
+          };
+        } catch (e) {
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({ success: false, error: e instanceof Error ? e.message : String(e) }, null, 2)
+            }],
+            isError: true
+          };
+        }
+      }
+
+      case 'render_plan_checklist': {
+        const { contextId, planIndex } = request.params.arguments as { contextId: string; planIndex?: number };
+        const ctx = await globalContextStore.getContext(contextId);
+        if (!ctx) throw new Error(`Context ${contextId} not found`);
+        if (!ctx.planningHistory.length) throw new Error('No planning sessions found for this context');
+        const idx = typeof planIndex === 'number' ? planIndex : ctx.planningHistory.length - 1;
+        const session = ctx.planningHistory[idx];
+        if (!session) throw new Error(`Planning session index ${idx} not found`);
+        const text = renderPlanChecklist(session.output.plan);
+        return { content: [{ type: 'text', text }] };
       }
 
       case 'create_project_context': {

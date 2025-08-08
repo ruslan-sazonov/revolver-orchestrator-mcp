@@ -13,6 +13,50 @@ export class Context7Client {
     this.url = url;
   }
 
+  private parsePossiblySSE<T = unknown>(raw: string): T {
+    const trimmed = raw.trim();
+    if (trimmed.startsWith('event:') || trimmed.includes('\ndata:')) {
+      const dataLines = trimmed
+        .split('\n')
+        .filter((l) => l.startsWith('data:'))
+        .map((l) => l.replace(/^data:\s*/, ''));
+      const last = dataLines[dataLines.length - 1];
+      if (!last) throw new Error(`Failed to parse Context7 SSE response: ${raw}`);
+      return JSON.parse(last) as T;
+    }
+    return JSON.parse(raw) as T;
+  }
+
+  async listTools(): Promise<any> {
+    const body: RpcRequest = {
+      jsonrpc: '2.0',
+      id: String(Date.now()),
+      method: 'tools/list'
+    };
+
+    const res = await fetch(this.url, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'accept': 'application/json, text/event-stream'
+      },
+      body: JSON.stringify(body)
+    });
+
+    const text = await res.text();
+    if (!res.ok) {
+      throw new Error(`Context7 HTTP ${res.status}${text ? `: ${text}` : ''}`);
+    }
+    try {
+      const parsed = this.parsePossiblySSE<RpcResponse<any>>(text);
+      const data = parsed as RpcResponse<any>;
+      if (data.error) throw new Error(data.error.message);
+      return data.result;
+    } catch (e) {
+      throw new Error(`Failed to parse Context7 response: ${text}`);
+    }
+  }
+
   private async callTool(name: string, args: Record<string, unknown>): Promise<string> {
     const body: RpcRequest = {
       jsonrpc: '2.0',
@@ -23,15 +67,24 @@ export class Context7Client {
 
     const res = await fetch(this.url, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: {
+        'content-type': 'application/json',
+        'accept': 'application/json, text/event-stream'
+      },
       body: JSON.stringify(body)
     });
 
+    const raw = await res.text();
     if (!res.ok) {
-      throw new Error(`Context7 HTTP ${res.status}`);
+      throw new Error(`Context7 HTTP ${res.status}${raw ? `: ${raw}` : ''}`);
     }
 
-    const data = (await res.json()) as RpcResponse<CallToolResult>;
+    let data: RpcResponse<CallToolResult>;
+    try {
+      data = this.parsePossiblySSE<RpcResponse<CallToolResult>>(raw);
+    } catch {
+      throw new Error(`Failed to parse Context7 response: ${raw}`);
+    }
     if (data.error) {
       throw new Error(data.error.message);
     }
