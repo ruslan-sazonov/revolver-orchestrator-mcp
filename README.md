@@ -1,4 +1,4 @@
-# AI Planning System with Gemini CLI Integration
+# AI Planning System for the Claude Code
 
 A comprehensive AI planning system that integrates Google's Gemini CLI as a planning backend with Claude Code for implementation. Features automatic plan-then-execute workflows, persistent context management, and seamless MCP integration.
 
@@ -30,16 +30,8 @@ A comprehensive AI planning system that integrates Google's Gemini CLI as a plan
    ```
 
 2. **Create and configure environment file:**
-   ```bash
-   # Create .env file with your configuration
-   cat > .env << EOF
-   GEMINI_API_KEY=your-api-key-here
-   GEMINI_MODEL=gemini-2.5-pro
-   GEMINI_TEMPERATURE=0.3
-   GEMINI_MAX_TOKENS=4000
-   GEMINI_CLI_PATH=gemini
-   EOF
-   ```
+   `cp .env.example .env`
+   Add your Gemini API key - `GEMINI_API_KEY` in .env
 
 3. **Install dependencies and build:**
    ```bash
