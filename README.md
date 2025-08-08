@@ -25,7 +25,7 @@ A comprehensive AI planning system that integrates Google's Gemini CLI as a plan
 1. **Clone and setup the system:**
    ```bash
    git clone <repository-url>
-   cd ai-planning-system
+   cd revolver-orchestrator-mcp/
    ./scripts/setup-gemini-cli.sh
    ```
 
